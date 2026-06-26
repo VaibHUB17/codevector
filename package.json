@@ -4,6 +4,9 @@
   "description": "High performance Node.js backend with keyset pagination",
   "type": "module",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
