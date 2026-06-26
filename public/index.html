@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Product Catalog</title>
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Design Tokens */
+    :root {
+      --bg-dark: #0a0c10;
+      --bg-surface: #12161f;
+      --bg-surface-glass: rgba(18, 22, 31, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      
+      --color-primary: #818cf8; /* Violet */
+      --color-primary-hover: #6366f1;
+      --color-text-main: #f3f4f6;
+      --color-text-muted: #9ca3af;
+      --color-accent: #22c55e; /* Green for price */
+      
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--color-text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Decorative background blobs */
+    .bg-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+    }
+
+    .blob-1 {
+      top: -10%;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      background-color: var(--color-primary);
+    }
+
+    .blob-2 {
+      bottom: -10%;
+      left: 10%;
+      width: 600px;
+      height: 600px;
+      background-color: #ec4899; /* pink-500 */
+    }
+
+    /* Container layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    /* Header styling */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    header h1 {
+      font-family: var(--font-heading);
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff 30%, var(--color-primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      font-weight: 300;
+    }
+
+    /* Controls: Glassmorphic Toolbar */
+    .toolbar {
+      background: var(--bg-surface-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .filters-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .filter-item label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .filter-item select {
+      background-color: #1a202c;
+      color: var(--color-text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.6rem 2.5rem 0.6rem 1rem;
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1rem;
+      transition: var(--transition-smooth);
+    }
+
+    .filter-item select:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+    }
+
+    .results-count {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    /* Product Card */
+    .product-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 200px;
+      position: relative;
+      transition: var(--transition-smooth);
+      overflow: hidden;
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-primary), #ec4899);
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .product-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .category-badge {
+      background: rgba(129, 140, 248, 0.1);
+      color: var(--color-primary);
+      border: 1px solid rgba(129, 140, 248, 0.2);
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .product-name {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: auto;
+    }
+
+    .product-price {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      font-family: var(--font-heading);
+    }
+
+    .product-date {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    /* Load More Section */
+    .load-more-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.8rem 2.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4);
+      transition: var(--transition-smooth);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.6);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      background: #1e293b;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Skeleton Loading Cards */
+    .skeleton-card {
+      height: 200px;
+      background: #181d29;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.03) 20%,
+        rgba(255, 255, 255, 0.05) 60%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .skeleton-badge {
+      width: 80px;
+      height: 20px;
+      background: #252d3d;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .skeleton-title {
+      width: 70%;
+      height: 22px;
+      background: #252d3d;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .skeleton-price {
+      width: 50px;
+      height: 28px;
+      background: #252d3d;
+      border-radius: 4px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filters-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-item select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>Premium Catalog</h1>
+      <p>Seamless cursor-based pagination over 200,000 items</p>
+    </header>
+
+    <!-- Toolbar Filters -->
+    <div class="toolbar">
+      <div class="filters-group">
+        <div class="filter-item">
+          <label for="category-select">Category</label>
+          <select id="category-select">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Apparel">Apparel</option>
+            <option value="Home & Kitchen">Home & Kitchen</option>
+            <option value="Beauty">Beauty</option>
+            <option value="Sports">Sports</option>
+            <option value="Books">Books</option>
+            <option value="Automotive">Automotive</option>
+            <option value="Toys">Toys</option>
+            <option value="Health">Health</option>
+            <option value="Garden">Garden</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="limit-select">Limit</label>
+          <select id="limit-select">
+            <option value="12">12 per page</option>
+            <option value="24" selected>24 per page</option>
+            <option value="48">48 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="results-count" id="results-count">
+        Loaded: 0 items
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="product-grid">
+      <!-- Cards injected dynamically -->
+    </div>
+
+    <!-- Load More Actions -->
+    <div class="load-more-container">
+      <button class="btn" id="load-more-btn">Load More</button>
+      <span class="results-count" id="end-message" style="display: none;">You've reached the end of the catalog.</span>
+    </div>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      products: [],
+      nextCursor: null,
+      category: '',
+      limit: 24,
+      isLoading: false
+    };
+
+    // DOM Elements
+    const grid = document.getElementById('product-grid');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const categorySelect = document.getElementById('category-select');
+    const limitSelect = document.getElementById('limit-select');
+    const resultsCount = document.getElementById('results-count');
+    const endMessage = document.getElementById('end-message');
+
+    // Attach listeners
+    categorySelect.addEventListener('change', (e) => {
+      state.category = e.target.value;
+      resetAndFetch();
+    });
+
+    limitSelect.addEventListener('change', (e) => {
+      state.limit = parseInt(e.target.value, 10);
+      resetAndFetch();
+    });
+
+    loadMoreBtn.addEventListener('click', () => {
+      if (!state.isLoading && state.nextCursor) {
+        fetchProducts(state.nextCursor);
+      }
+    });
+
+    // Generate loader placeholders
+    function renderSkeletons(count) {
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        html += `
+          <div class="skeleton-card">
+            <div class="skeleton-badge"></div>
+            <div class="skeleton-title"></div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto;">
+              <div class="skeleton-price"></div>
+            </div>
+          </div>
+        `;
+      }
+      grid.insertAdjacentHTML('beforeend', html);
+    }
+
+    // Clear grid loaders
+    function removeSkeletons() {
+      const skeletons = document.querySelectorAll('.skeleton-card');
+      skeletons.forEach(s => s.remove());
+    }
+
+    // Format Date beautifully
+    function formatDate(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+             date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    // Reset list and fetch first page
+    function resetAndFetch() {
+      state.products = [];
+      state.nextCursor = null;
+      grid.innerHTML = '';
+      endMessage.style.display = 'none';
+      loadMoreBtn.style.display = 'inline-block';
+      fetchProducts();
+    }
+
+    // Core Fetch method
+    async function fetchProducts(cursor = null) {
+      state.isLoading = true;
+      loadMoreBtn.disabled = true;
+      renderSkeletons(state.limit);
+
+      try {
+        let url = `/api/products?limit=${state.limit}`;
+        if (state.category) {
+          url += `&category=${encodeURIComponent(state.category)}`;
+        }
+        if (cursor) {
+          url += `&cursor=${encodeURIComponent(cursor)}`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('Failed to retrieve products from API.');
+        }
+
+        const data = await response.json();
+        
+        removeSkeletons();
+
+        state.products = [...state.products, ...data.products];
+        state.nextCursor = data.next_cursor;
+
+        // Render products
+        if (data.products.length === 0 && state.products.length === 0) {
+          grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--color-text-muted); padding: 4rem;">No products found in this category.</div>`;
+        } else {
+          data.products.forEach(p => {
+            const cardHtml = `
+              <div class="product-card">
+                <div class="card-header">
+                  <span class="category-badge">${p.category}</span>
+                  <div class="product-date">
+                    <span>${formatDate(p.created_at)}</span>
+                    <span style="font-size: 0.65rem; color: #4b5563;">${p.id.substring(0, 8)}</span>
+                  </div>
+                </div>
+                <div class="product-name">${p.name}</div>
+                <div class="card-footer">
+                  <span class="product-price">$${p.price.toFixed(2)}</span>
+                </div>
+              </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', cardHtml);
+          });
+        }
+
+        // Update counts and button state
+        resultsCount.innerText = `Loaded: ${state.products.length} items`;
+        
+        if (!state.nextCursor) {
+          loadMoreBtn.style.display = 'none';
+          if (state.products.length > 0) {
+            endMessage.style.display = 'inline-block';
+          }
+        } else {
+          loadMoreBtn.style.display = 'inline-block';
+        }
+
+      } catch (err) {
+        console.error(err);
+        removeSkeletons();
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 4rem;">Error fetching data. Ensure database is running and connected.</div>`;
+      } finally {
+        state.isLoading = false;
+        loadMoreBtn.disabled = false;
+      }
+    }
+
+    // Initial load
+    resetAndFetch();
+  </script>
+</body>
+</html>
